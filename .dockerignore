@@ -1,0 +1,6 @@
+node_modules/
+artifacts/
+.git/
+.env
+npm-debug.log*
+yarn-error.log*
