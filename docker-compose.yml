@@ -1,0 +1,30 @@
+services:
+  scarlat-consulta-vec:
+    build: .
+    container_name: scarlat-consulta-vec
+    ports:
+      - "3000:3000"
+    depends_on:
+      - scarlat-postgres
+    env_file:
+      - .env
+    environment:
+      HEADLESS: "true"
+      DATABASE_URL: postgres://scarlat:scarlat@scarlat-postgres:5432/scarlat
+      USER_DATA_DIR: /app/artifacts/profile
+    volumes:
+      - ./artifacts:/app/artifacts
+  scarlat-postgres:
+    image: postgres:16-alpine
+    container_name: scarlat-postgres
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_DB: scarlat
+      POSTGRES_USER: scarlat
+      POSTGRES_PASSWORD: scarlat
+    volumes:
+      - scarlat-postgres-data:/var/lib/postgresql/data
+
+volumes:
+  scarlat-postgres-data:

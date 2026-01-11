@@ -1,6 +1,6 @@
 const path = require("path");
 
-const DEFAULT_URL = "https://example.com/";
+const DEFAULT_URL = "https://web.telegram.org/a/";
 const DEFAULT_NAV_TIMEOUT_MS = 60000;
 const DEFAULT_API_PORT = 3000;
 const DEFAULT_CAPTCHA_API_URL = "https://api.2captcha.com/createTask";
@@ -25,6 +25,17 @@ const DEFAULT_RESULT_WAIT_MS = 30000;
 const DEFAULT_OPEN_POPUP_WAIT_MS = 10000;
 const DEFAULT_RESULT_PAGE_WAIT_MS = 20000;
 const DEFAULT_RESULT_DATA_WAIT_MS = 4000;
+const DEFAULT_DB_PORT = 5432;
+const DEFAULT_DB_TABLE = "placas";
+const DEFAULT_DB_SSL = false;
+const DEFAULT_DB_AUTO_MIGRATE = true;
+const DEFAULT_PROFILE_LOCK_CLEANUP = true;
+const DEFAULT_QR_LOG_ON_LOGIN = true;
+const DEFAULT_PROFILE_FALLBACK_ON_LOCK = false;
+const DEFAULT_PROFILE_FALLBACK_COPY = false;
+const DEFAULT_QR_WAIT_MS = 8000;
+const DEFAULT_CHAT_LIST_LOGIN_WAIT_MS = 3000;
+const DEFAULT_CHAT_LIST_GRACE_MS = 3000;
 
 function parseNumber(name, value, fallback) {
   const parsed = Number.parseInt(value ?? "", 10);
@@ -37,6 +48,20 @@ function parseNumber(name, value, fallback) {
   }
 
   throw new Error(`${name} must be a number.`);
+}
+
+function parseBool(name, value, fallback) {
+  if (value === undefined || value === null || value === "") {
+    return fallback;
+  }
+  const normalized = String(value).trim().toLowerCase();
+  if (["true", "1", "yes", "y"].includes(normalized)) {
+    return true;
+  }
+  if (["false", "0", "no", "n"].includes(normalized)) {
+    return false;
+  }
+  throw new Error(`${name} must be a boolean.`);
 }
 
 function loadConfig() {
@@ -145,6 +170,50 @@ function loadConfig() {
       process.env.TYPE_DELAY_MS,
       DEFAULT_TYPE_DELAY_MS
     ),
+    dbUrl: process.env.DATABASE_URL || process.env.DB_URL || "",
+    dbHost: process.env.PGHOST || process.env.DB_HOST || "",
+    dbPort: parseNumber("DB_PORT", process.env.PGPORT || process.env.DB_PORT, DEFAULT_DB_PORT),
+    dbName: process.env.PGDATABASE || process.env.DB_NAME || "",
+    dbUser: process.env.PGUSER || process.env.DB_USER || "",
+    dbPassword: process.env.PGPASSWORD || process.env.DB_PASSWORD || "",
+    dbSsl: parseBool("DB_SSL", process.env.DB_SSL, DEFAULT_DB_SSL),
+    dbTable: process.env.DB_TABLE || DEFAULT_DB_TABLE,
+    dbAutoMigrate: parseBool(
+      "DB_AUTO_MIGRATE",
+      process.env.DB_AUTO_MIGRATE,
+      DEFAULT_DB_AUTO_MIGRATE
+    ),
+    profileLockCleanup: parseBool(
+      "PROFILE_LOCK_CLEANUP",
+      process.env.PROFILE_LOCK_CLEANUP,
+      DEFAULT_PROFILE_LOCK_CLEANUP
+    ),
+    profileFallbackOnLock: parseBool(
+      "PROFILE_FALLBACK_ON_LOCK",
+      process.env.PROFILE_FALLBACK_ON_LOCK,
+      DEFAULT_PROFILE_FALLBACK_ON_LOCK
+    ),
+    profileFallbackCopy: parseBool(
+      "PROFILE_FALLBACK_COPY",
+      process.env.PROFILE_FALLBACK_COPY,
+      DEFAULT_PROFILE_FALLBACK_COPY
+    ),
+    qrLogOnLogin: parseBool(
+      "QR_LOG_ON_LOGIN",
+      process.env.QR_LOG_ON_LOGIN,
+      DEFAULT_QR_LOG_ON_LOGIN
+    ),
+    qrWaitMs: parseNumber("QR_WAIT_MS", process.env.QR_WAIT_MS, DEFAULT_QR_WAIT_MS),
+    chatListLoginWaitMs: parseNumber(
+      "CHAT_LIST_LOGIN_WAIT_MS",
+      process.env.CHAT_LIST_LOGIN_WAIT_MS,
+      DEFAULT_CHAT_LIST_LOGIN_WAIT_MS
+    ),
+    chatListGraceMs: parseNumber(
+      "CHAT_LIST_GRACE_MS",
+      process.env.CHAT_LIST_GRACE_MS,
+      DEFAULT_CHAT_LIST_GRACE_MS
+    ),
     debugLogs: String(process.env.DEBUG_LOGS || "").toLowerCase() === "true",
   };
 }
@@ -152,4 +221,5 @@ function loadConfig() {
 module.exports = {
   loadConfig,
   parseNumber,
+  parseBool,
 };

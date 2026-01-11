@@ -1,6 +1,7 @@
 FROM node:20-bookworm-slim
 
-ENV NODE_ENV=production
+ENV NODE_ENV=production \
+  PUPPETEER_CACHE_DIR=/app/.cache/puppeteer
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
   ca-certificates \
@@ -35,8 +36,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
+RUN mkdir -p /app/.cache/puppeteer
 COPY package*.json ./
-RUN npm install --omit=dev
+RUN npm ci --omit=dev
 COPY . .
+RUN mkdir -p /app/artifacts \
+  && chown -R node:node /app/artifacts /app/.cache/puppeteer
 
-CMD ["node", "src/index.js"]
+USER node
+EXPOSE 3000
+
+CMD ["npm", "start"]
